@@ -87,11 +87,12 @@ class CollectionPropertyHandler implements PropertyHandler, Opcodes {
                 codeExpr: [GeneralUtils.callX(GeneralUtils.callThisX(methodNode.name), 'add', GeneralUtils.localVarX('val', type))]
         )
 
+        final arrayType = type.makeArray()
         utils.createAndAddMethod(
                 methodName: propertyName,
-                modifiers: ACC_PUBLIC,
-                parameters: [new Parameter(type.makeArray(), 'val')],
-                codeExpr: [GeneralUtils.callX(GeneralUtils.callThisX(methodNode.name), 'addAll', GeneralUtils.localVarX('val', type))]
+                modifiers: ACC_PUBLIC | ACC_VARARGS,
+                parameters: [new Parameter(arrayType, 'val')],
+                codeExpr: [GeneralUtils.callX(GeneralUtils.callThisX(methodNode.name), 'addAll', GeneralUtils.localVarX('val', arrayType))]
         )
     }
 }

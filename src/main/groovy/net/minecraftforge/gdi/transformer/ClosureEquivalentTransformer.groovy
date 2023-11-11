@@ -19,6 +19,7 @@ import org.codehaus.groovy.transform.GroovyASTTransformation
 import org.codehaus.groovy.transform.sc.StaticCompileTransformation
 import org.gradle.api.Action
 
+import java.util.stream.Collectors
 import java.util.stream.Stream
 
 @CompileStatic
@@ -42,7 +43,7 @@ class ClosureEquivalentTransformer extends AbstractASTTransformation implements 
         final stmt = GeneralUtils.callX(VariableExpression.THIS_EXPRESSION, method.name, GeneralUtils.args(
                 Stream.of(method.parameters).filter { it.name != '$self' }.<Expression>map {
                     it === actionParam ? asAction(GeneralUtils.varX(closureParam)) : GeneralUtils.varX(it)
-                }.toList()
+                }.collect(Collectors.toList())
         ))
         final mtd = clazz.addMethod(
                 method.name, ACC_PUBLIC,

@@ -6,6 +6,7 @@
 package net.minecraftforge.gdi.tests.property
 
 import groovy.transform.CompileStatic
+import groovyjarjarasm.asm.Opcodes
 import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.MethodNode
@@ -92,6 +93,11 @@ class PropertyTest {
         owner.invokeMethod('integer', 13)
         assertEquals(owner.integers.get(), [13])
         assertNotNull(getMethod('integer', Integer))
+
+        owner."integers"(14, 557)
+        assertEquals(owner.integers.get(), [13, 14, 557])
+        assertNotNull(getMethod('integers', Integer[]))
+        assertTrue((getMethod('integers', Integer[]).modifiers & Opcodes.ACC_VARARGS) !== 0, 'method is not varargs')
 
         owner.invokeMethod('configurableListed', owner.factory.newInstance(ConfigurableObject, 'dummy').tap {
             it.string = 'Hello!'

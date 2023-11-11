@@ -16,6 +16,7 @@ import org.codehaus.groovy.transform.AbstractASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
 import org.codehaus.groovy.transform.sc.StaticCompileTransformation
 
+import java.util.stream.Collectors
 import java.util.stream.Stream
 
 @CompileStatic
@@ -45,7 +46,7 @@ class BouncerMethodTransformer extends AbstractASTTransformation implements Opco
 
         final actualParams = Stream.of(method.parameters)
                 .filter { it.name != '$self' }
-                .toList()
+                .collect(Collectors.toList())
 
         final mtd = new MethodNode(
                 method.name, ACC_BRIDGE | ACC_SYNTHETIC | ACC_PUBLIC, bouncerType,
@@ -54,7 +55,7 @@ class BouncerMethodTransformer extends AbstractASTTransformation implements Opco
                     it.visitIntInsn(ALOAD, 0) // Load self
                     final params = actualParams.stream()
                             .map { TransformerUtils.getType(it.type) }
-                            .toList()
+                            .collect(Collectors.toList())
                     for (int i = 0; i < params.size(); i++) {
                         it.visitIntInsn(params[i].getOpcode(ILOAD), i + 1)
                     }

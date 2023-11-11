@@ -1,16 +1,21 @@
+import net.neoforged.gradleutils.PomUtilsExtension
+
 plugins {
     id 'java'
     id 'groovy'
-    id 'signing'
     id 'maven-publish'
     id 'org.cadixdev.licenser' version '0.6.1'
-    id 'net.neoforged.gradleutils' version '2.+'
-    id 'io.github.gradle-nexus.publish-plugin' version '1.3.0'
+    id 'net.neoforged.gradleutils' version '3.0.0-alpha.4'
 }
 
 group = 'net.neoforged'
-version = gradleutils.getTagOffsetVersion()
+version = gradleutils.version
 archivesBaseName = 'groovydslimprover'
+
+gradleutils {
+    setupSigning()
+    setupCentralPublishing()
+}
 
 sourceSets {
     runtime {}
@@ -36,7 +41,7 @@ java {
 }
 
 changelog {
-    fromTag '1.0'
+    from '1.0'
 }
 
 repositories {
@@ -87,42 +92,18 @@ test {
     useJUnitPlatform()
 }
 
-nexusPublishing {
-    repositories {
-        sonatype {
-            username.set(System.getenv('SONATYPE_USER') ?: '')
-            password.set(System.getenv('SONATYPE_PASSWORD') ?: '')
-            nexusUrl.set(uri('https://s01.oss.sonatype.org/service/local/'))
-        }
-    }
-}
-
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        register('mavenJava', MavenPublication) {
             from components.java
             artifactId = 'groovydslimprover'
+            gradleutils.sign(it)
 
             pom {
                 name = 'GroovyDSLImprover'
                 description = 'Groovy Compiler Plugin to improve building Groovy based DSLs, like those used in Gradle.'
-                url = 'https://github.com/neoforged/GroovyDSLImprover'
-                scm {
-                    url = 'https://github.com/neoforged/GroovyDSLImprover'
-                    connection = 'scm:git:git://github.com/neoforged/GroovyDSLImprover.git'
-                    developerConnection = 'scm:git:git@github.com:neoforged/GroovyDSLImprover.git'
-                }
-                issueManagement {
-                    system = 'github'
-                    url = 'https://github.com/neoforged/GroovyDSLImprover/issues'
-                }
-
-                licenses {
-                    license {
-                        name = 'LGPLv2.1'
-                        url = 'https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt'
-                    }
-                }
+                pomUtils.license(it, PomUtilsExtension.License.LGPL_v2)
+                pomUtils.githubRepo(it, 'GroovyDSLImprover')
 
                 developers {
                     developer {
@@ -134,15 +115,6 @@ publishing {
         }
     }
     repositories {
-        maven gradleutils.getPublishingForgeMaven()
-    }
-}
-
-if (System.getenv('GPG_PRIVATE_KEY')) {
-    signing {
-        final signingKey = System.getenv('GPG_PRIVATE_KEY') ?: ''
-        final signingPassword = System.getenv('GPG_KEY_PASSWORD') ?: ''
-        useInMemoryPgpKeys(signingKey, signingPassword)
-        sign publishing.publications.mavenJava
+        maven gradleutils.publishingMaven
     }
 }
