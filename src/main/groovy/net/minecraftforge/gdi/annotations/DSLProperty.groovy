@@ -42,6 +42,8 @@ import java.lang.annotation.*
  *          <th>
  *              <ul>
  *                  <li>{@code $singularName(T)} - the given value will be added to the list</li>
+ *                  <li>{@code $propertyName(T...)} - the given values will be added to the list</li>
+ *                  <li>{@code $propertyName(Iterable<? extends T>)} - the given values will be added to the list</li>
  *                  <li>{@code $singularName(T, Action<T>)} - the action will be executed on the given value, which will be then added to the list</li>
  *                  <li>{@code $singularName(T, @DelegatesTo(T.class) Closure<T>)} - same behaviour as the action</li>
  *              </ul>
@@ -60,6 +62,7 @@ import java.lang.annotation.*
  *                  <li>{@code $singularName(K, V, Action<V>)} - the action will be executed on the given value, which will be then added to the map at the given key</li>
  *                  <li>{@code $singularName(K, V, @DelegatesTo(V.class) Closure<V>)} - same behaviour as the action</li>
  *                  <li>{@code $propertyName(Map<K, V>)} - calls {@link MapProperty#putAll(java.util.Map)}</li>
+ *                  <li>{@code $propertyName(CommonAncestor...)} - computes a key-value mapping from the vararg array (expecting an array such as [k1, v1, k2, v2, ...], with an even number of elements, and of the correct key and value types), and calls {@link MapProperty#put(java.lang.Object, java.lang.Object)} with each pair; the array type is determined by the first common type in the inheritance tree of both the key and the value, or {@link Object} otherwise</li>
  *              </ul>
  *              The methods below are generated <i>only</i> if a {@linkplain DSLProperty#factory() factory} is supplied:
  *              <ul>

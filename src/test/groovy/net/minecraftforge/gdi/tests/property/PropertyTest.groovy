@@ -18,7 +18,9 @@ import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import org.mockito.internal.util.collections.Iterables
 
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.Stream
 
 import static org.junit.jupiter.api.Assertions.*
@@ -99,6 +101,15 @@ class PropertyTest {
         assertNotNull(getMethod('integers', Integer[]))
         assertTrue((getMethod('integers', Integer[]).modifiers & Opcodes.ACC_VARARGS) !== 0, 'method is not varargs')
 
+        owner.invokeMethod('integers', new Iterable() {
+            @Override
+            Iterator iterator() {
+                Stream.of(44).iterator()
+            }
+        })
+        assertEquals(owner.integers.get().get(3), 44)
+        assertNotNull(getMethod('integers', Iterable))
+
         owner.invokeMethod('configurableListed', owner.factory.newInstance(ConfigurableObject, 'dummy').tap {
             it.string = 'Hello!'
         })
@@ -137,6 +148,26 @@ class PropertyTest {
         owner.invokeMethod('map', ['hello world': 'sup?'])
         assertEquals(owner.map.get(), [key1: 'value1', 'hello world': 'sup?'])
         assertNotNull(getMethod('map', Map))
+
+        owner.map.set(new HashMap<String, String>())
+        owner.invokeMethod('map', ['hi', 'its a me', 'mario', 'ok?'] as String[])
+        assertEquals(owner.map.get(), [hi: 'its a me', 'mario': 'ok?'])
+        assertNotNull(getMethod('map', String[]))
+
+        assertThrows(IllegalArgumentException) {
+            owner.invokeMethod('map', ['abc', 'def', 'ghi'] as String[])
+        }
+
+        assertThrows(ClassCastException) {
+            owner.invokeMethod('weirdMap', [12, new AtomicInteger()] as Object[])
+        }
+
+        assertThrows(ClassCastException) {
+            owner.invokeMethod('weirdMap', ['abcd', TestEnum.DEFINITELY] as Object[])
+        }
+
+        owner.invokeMethod('weirdMap', [13, TestEnum.DEFINITELY] as Object[])
+        assertEquals(owner.weirdMap.get(), [13: TestEnum.DEFINITELY])
     }
 
     @Test

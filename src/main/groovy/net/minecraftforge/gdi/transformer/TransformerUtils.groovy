@@ -10,6 +10,9 @@ import groovyjarjarasm.asm.Type
 import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.ClassNode
 
+import java.util.stream.Collectors
+import java.util.stream.Stream
+
 @CompileStatic
 class TransformerUtils {
 
@@ -30,5 +33,22 @@ class TransformerUtils {
             case ClassHelper.char_TYPE: return Type.CHAR_TYPE
             default: return Type.getObjectType(getInternalName(classNode))
         }
+    }
+
+    static ClassNode getCommonAncestor(ClassNode first, ClassNode second) {
+        final secondAncestors = hierarchyTree(second).collect(Collectors.toSet())
+        return hierarchyTree(first).filter(secondAncestors.&contains).findFirst().orElse(ClassHelper.OBJECT_TYPE)
+    }
+
+    static Stream<ClassNode> hierarchyTree(ClassNode node) {
+        final builder = Stream.<ClassNode>builder()
+        builder.add(node)
+        if (node.superClass !== null) {
+            hierarchyTree(node.superClass).forEach(builder.&add)
+        }
+        node.interfaces.each {
+            hierarchyTree(it).forEach(builder.&add)
+        }
+        builder.build()
     }
 }

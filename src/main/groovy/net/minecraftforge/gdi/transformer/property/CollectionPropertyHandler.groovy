@@ -91,8 +91,18 @@ class CollectionPropertyHandler implements PropertyHandler, Opcodes {
         utils.createAndAddMethod(
                 methodName: propertyName,
                 modifiers: ACC_PUBLIC | ACC_VARARGS,
-                parameters: [new Parameter(arrayType, 'val')],
-                codeExpr: [GeneralUtils.callX(GeneralUtils.callThisX(methodNode.name), 'addAll', GeneralUtils.localVarX('val', arrayType))]
+                parameters: [new Parameter(arrayType, 'values')],
+                codeExpr: [GeneralUtils.callX(GeneralUtils.callThisX(methodNode.name), 'addAll', GeneralUtils.localVarX('values', arrayType))]
+        )
+
+        final iterable = GenericsUtils.makeClassSafeWithGenerics(ClassHelper.make(Iterable), new GenericsType[]{new GenericsType(type, new ClassNode[] {type}, null).tap {
+            it.wildcard = true
+        }})
+        utils.createAndAddMethod(
+                methodName: propertyName,
+                modifiers: ACC_PUBLIC,
+                parameters: [new Parameter(iterable, 'values')],
+                codeExpr: [GeneralUtils.callX(GeneralUtils.callThisX(methodNode.name), 'addAll', GeneralUtils.localVarX('values', iterable))]
         )
     }
 }

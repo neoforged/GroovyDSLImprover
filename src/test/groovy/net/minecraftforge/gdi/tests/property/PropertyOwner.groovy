@@ -41,6 +41,9 @@ interface PropertyOwner {
     @DSLProperty(singularName = 'mapEntry')
     MapProperty<String, String> getMap()
 
+    @DSLProperty(singularName = 'weirdMapEntry')
+    MapProperty<Integer, TestEnum> getWeirdMap()
+
     @Inject
     ObjectFactory getFactory()
 }

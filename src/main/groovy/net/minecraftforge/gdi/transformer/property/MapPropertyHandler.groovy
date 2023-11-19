@@ -7,7 +7,9 @@ package net.minecraftforge.gdi.transformer.property
 
 import groovy.transform.CompileStatic
 import groovyjarjarasm.asm.Opcodes
+import net.minecraftforge.gdi.runtime.MapUtils
 import net.minecraftforge.gdi.transformer.DSLPropertyTransformer
+import net.minecraftforge.gdi.transformer.TransformerUtils
 import org.codehaus.groovy.ast.*
 import org.codehaus.groovy.ast.tools.GeneralUtils
 import org.codehaus.groovy.ast.tools.GenericsUtils
@@ -17,6 +19,7 @@ import org.gradle.api.provider.MapProperty
 @CompileStatic
 class MapPropertyHandler implements PropertyHandler, Opcodes {
     private static final ClassNode MAP_PROPERTY_TYPE = ClassHelper.make(MapProperty)
+    private static final ClassNode MAP_UTILS = ClassHelper.make(MapUtils)
 
     @Override
     boolean handle(MethodNode methodNode, AnnotationNode annotation, String propertyName, DSLPropertyTransformer.Utils utils) {
@@ -78,6 +81,19 @@ class MapPropertyHandler implements PropertyHandler, Opcodes {
                 modifiers: ACC_PUBLIC,
                 parameters: [new Parameter(mapType, 'map')],
                 codeExpr: [GeneralUtils.callX(GeneralUtils.callThisX(methodNode.name), 'putAll', GeneralUtils.args(GeneralUtils.localVarX('map', mapType)))]
+        )
+
+        final varArg = TransformerUtils.getCommonAncestor(keyType, valueType).makeArray()
+        utils.createAndAddMethod(
+                methodName: propertyName,
+                modifiers: ACC_PUBLIC | ACC_VARARGS,
+                parameters: [new Parameter(varArg, 'values')],
+                codeExpr: [GeneralUtils.callX(MAP_UTILS, 'put', GeneralUtils.args(
+                        GeneralUtils.classX(keyType),
+                        GeneralUtils.classX(valueType),
+                        GeneralUtils.callThisX(methodNode.name),
+                        GeneralUtils.castX(ClassHelper.OBJECT_TYPE, GeneralUtils.localVarX('values', varArg))
+                ))]
         )
 
         return true
