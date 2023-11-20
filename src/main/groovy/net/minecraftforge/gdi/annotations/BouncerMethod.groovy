@@ -21,7 +21,7 @@ import java.lang.annotation.Target
 @GroovyASTTransformationClass(classes = BouncerMethodTransformer)
 @interface BouncerMethod {
     /**
-     * The return type of the bouncer method.
+     * @return the return type of the bouncer method
      */
     Class<?> returnType()
 }
