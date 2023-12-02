@@ -208,7 +208,7 @@ class DSLPropertyTransformer extends AbstractASTTransformation {
             }
         }
 
-        List<? extends Expression> delegateAndCall(VariableExpression closure, VariableExpression delegate) {
+        List<? extends Expression> delegateAndCall(VariableExpression closure, Expression delegate) {
             return [
                     GeneralUtils.callX(closure, 'setDelegate', GeneralUtils.args(delegate)),
                     GeneralUtils.callX(closure, 'setResolveStrategy', GeneralUtils.constX(Closure.DELEGATE_FIRST)),

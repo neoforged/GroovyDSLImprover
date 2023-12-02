@@ -181,6 +181,27 @@ class PropertyTest {
 
         assertNotNull(getMethod('objectWhichCanBeConfigured', Action))
         assertNotNull(getMethod('objectWhichCanBeConfigured', Closure))
+
+        // We expect a setter as it's a Property
+        assertNotNull(getMethod('objectWhichCanBeConfigured', ConfigurableObject))
+        assertNotNull(getMethod('objectWhichCanBeConfigured', ConfigurableObject, Action))
+        assertNotNull(getMethod('objectWhichCanBeConfigured', ConfigurableObject, Closure))
+    }
+
+    @Test
+    void "Direct properties generate only getter methods"() {
+        owner.invokeMethod('subOwner', {
+            value = 'abc'
+        })
+        assertEquals(owner.subOwner.value.get(), 'abc')
+
+        assertNotNull(getMethod('subOwner', Action))
+        assertNotNull(getMethod('subOwner', Closure))
+
+        // We don't expect a setter as it's direct
+        assertNull(getMethod('subOwner', NiceSubOwner))
+        assertNull(getMethod('subOwner', NiceSubOwner, Action))
+        assertNull(getMethod('subOwner', NiceSubOwner, Closure))
     }
 
     private static MethodNode getMethod(String name, Class... parameters) {

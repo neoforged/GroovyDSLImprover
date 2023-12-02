@@ -46,17 +46,17 @@ class DefaultPropertyHandler implements PropertyHandler, Opcodes {
 
         final delegationStrategy = new DSLPropertyTransformer.OverloadDelegationStrategy(0, propertyGetExpr)
 
+        final setter = query.setter(methodNode, GeneralUtils.localVarX(propertyName, type))
+
         final defaultSetter = { String methodName ->
-            utils.createAndAddMethod(
-                    methodName: methodName,
-                    modifiers: ACC_PUBLIC,
-                    parameters: [new Parameter(type, propertyName)],
-                    code: GeneralUtils.stmt(GeneralUtils.callX(
-                            GeneralUtils.callThisX(methodNode.name),
-                            'set',
-                            GeneralUtils.localVarX(propertyName, type)
-                    ))
-            )
+            if (setter !== null) {
+                utils.createAndAddMethod(
+                        methodName: methodName,
+                        modifiers: ACC_PUBLIC,
+                        parameters: [new Parameter(type, propertyName)],
+                        code: GeneralUtils.stmt(setter)
+                )
+            }
         }
 
         if (propertyName.startsWith('is')) {
@@ -69,44 +69,67 @@ class DefaultPropertyHandler implements PropertyHandler, Opcodes {
 
         if (utils.getBoolean(annotation, 'isConfigurable', true)) {
             final actionClazzType = GenericsUtils.makeClassSafeWithGenerics(Action, type)
-            utils.createAndAddMethod(
-                    methodName: propertyName,
-                    modifiers: ACC_PUBLIC,
-                    parameters: [new Parameter(type, propertyName), new Parameter(
-                            actionClazzType,
-                            'action'
-                    )],
-                    codeExpr: {
-                        final valVar = GeneralUtils.localVarX(propertyName, type)
-                        [
-                                GeneralUtils.callX(
-                                        GeneralUtils.varX('action', actionClazzType),
-                                        'execute',
-                                        valVar
-                                ),
-                                GeneralUtils.callX(GeneralUtils.callThisX(methodNode.name), 'set', valVar)
-                        ]
-                    }(),
-                    delegationStrategies: { [delegationStrategy] }
-            )
+            if (setter !== null) {
+                utils.createAndAddMethod(
+                        methodName: propertyName,
+                        modifiers: ACC_PUBLIC,
+                        parameters: [new Parameter(type, propertyName), new Parameter(
+                                actionClazzType,
+                                'action'
+                        )],
+                        codeExpr: {
+                            final valVar = GeneralUtils.localVarX(propertyName, type)
+                            [
+                                    GeneralUtils.callX(
+                                            GeneralUtils.varX('action', actionClazzType),
+                                            'execute',
+                                            valVar
+                                    ),
+                                    query.setter(methodNode, valVar)
+                            ]
+                        }(),
+                        delegationStrategies: { [delegationStrategy] }
+                )
 
-            utils.createAndAddMethod(
-                    methodName: propertyName,
-                    modifiers: ACC_PUBLIC,
-                    parameters: [new Parameter(type, propertyName), utils.closureParam(type)],
-                    codeExpr: {
-                        final List<Expression> expr = []
-                        final closure = GeneralUtils.varX('closure', DSLPropertyTransformer.RAW_GENERIC_CLOSURE)
-                        final valVar = GeneralUtils.localVarX(propertyName, type)
-                        expr.addAll(utils.delegateAndCall(closure, valVar))
-                        query.setter(methodNode, valVar)?.tap { expr.add(it) }
-                        return expr
-                    }(),
-                    delegationStrategies: { [delegationStrategy] }
-            )
+                utils.createAndAddMethod(
+                        methodName: propertyName,
+                        modifiers: ACC_PUBLIC,
+                        parameters: [new Parameter(type, propertyName), utils.closureParam(type)],
+                        codeExpr: {
+                            final List<Expression> expr = []
+                            final closure = GeneralUtils.varX('closure', DSLPropertyTransformer.RAW_GENERIC_CLOSURE)
+                            final valVar = GeneralUtils.localVarX(propertyName, type)
+                            expr.addAll(utils.delegateAndCall(closure, valVar))
+                            expr.add(query.setter(methodNode, valVar))
+                            return expr
+                        }(),
+                        delegationStrategies: { [delegationStrategy] }
+                )
+            } else {
+                utils.createAndAddMethod(
+                        methodName: propertyName,
+                        modifiers: ACC_PUBLIC,
+                        parameters: [new Parameter(
+                                actionClazzType,
+                                'action'
+                        )],
+                        codeExpr: [GeneralUtils.callX(
+                                GeneralUtils.varX('action', actionClazzType),
+                                'execute',
+                                query.getter(methodNode)
+                        )]
+                )
+
+                utils.createAndAddMethod(
+                        methodName: propertyName,
+                        modifiers: ACC_PUBLIC,
+                        parameters: [utils.closureParam(type)],
+                        codeExpr: utils.delegateAndCall(GeneralUtils.varX('closure', DSLPropertyTransformer.RAW_GENERIC_CLOSURE), query.getter(methodNode))
+                )
+            }
         }
 
-        if (type.superClass == ENUM_TYPE) {
+        if (type.superClass == ENUM_TYPE && setter !== null) {
             utils.createAndAddMethod(
                     methodName: propertyName,
                     modifiers: ACC_PUBLIC,

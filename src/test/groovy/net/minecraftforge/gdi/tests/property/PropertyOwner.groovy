@@ -12,6 +12,7 @@ import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Nested
 
 import javax.inject.Inject
 
@@ -46,6 +47,16 @@ interface PropertyOwner {
 
     @Inject
     ObjectFactory getFactory()
+
+    @Nested
+    @DSLProperty(isConfigurable = true)
+    abstract NiceSubOwner getSubOwner()
+}
+
+@CompileStatic
+abstract class NiceSubOwner {
+    @DSLProperty
+    abstract Property<String> getValue()
 }
 
 @CompileStatic
