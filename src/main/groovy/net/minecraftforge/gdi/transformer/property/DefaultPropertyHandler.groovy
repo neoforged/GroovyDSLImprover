@@ -54,7 +54,8 @@ class DefaultPropertyHandler implements PropertyHandler, Opcodes {
                         methodName: methodName,
                         modifiers: ACC_PUBLIC,
                         parameters: [new Parameter(type, propertyName)],
-                        code: GeneralUtils.stmt(setter)
+                        code: GeneralUtils.stmt(setter),
+                        delegationStrategies: {type == ClassHelper.boolean_TYPE ? [new DSLPropertyTransformer.OverloadDelegationStrategy(0, GeneralUtils.constX(true))] : []}
                 )
             }
         }

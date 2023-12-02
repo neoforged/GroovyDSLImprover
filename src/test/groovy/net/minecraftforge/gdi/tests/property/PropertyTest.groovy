@@ -56,9 +56,19 @@ class PropertyTest {
         owner.invokeMethod('existing', true)
         assertEquals(owner.isExisting.get(), true)
 
+        // Reset to false to test again
+        owner.isExisting.set(false)
+        assertEquals(owner.isExisting.get(), false)
+
+        owner.existing()
+        assertEquals(owner.isExisting.get(), true)
+
         // Methods for wrapper types generate primitive DSL methods
         assertNotNull(getMethod('existing', boolean))
         assertNotNull(getMethod('setExisting', boolean))
+
+        // As for booleans, we also generate a no-arg setter that sets the value to true
+        assertNotNull(getMethod('existing'))
     }
 
     @Test
