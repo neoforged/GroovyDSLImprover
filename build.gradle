@@ -10,7 +10,6 @@ plugins {
 
 group = 'net.neoforged'
 version = gradleutils.version
-archivesBaseName = 'groovydslimprover'
 
 gradleutils {
     setupSigning()
@@ -96,7 +95,6 @@ publishing {
     publications {
         register('mavenJava', MavenPublication) {
             from components.java
-            artifactId = 'groovydslimprover'
             gradleutils.sign(it)
 
             pom {
