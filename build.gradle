@@ -60,8 +60,12 @@ dependencies {
     runtimeImplementation gradleApi()
 
     baseImplementation gradleApi()
-    baseImplementation sourceSets.runtime.output
-    baseImplementation sourceSets.main.output
+    baseImplementation(project(":")) {
+        capabilities {
+            requireCapability("net.neoforged:groovydslimprover-runtime")
+        }
+    }
+    baseImplementation(project(":"))
 
     compileOnly 'org.jetbrains:annotations:24.0.0'
 
