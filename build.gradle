@@ -10,7 +10,6 @@ plugins {
 
 group = 'net.neoforged'
 version = gradleutils.version
-archivesBaseName = 'groovydslimprover'
 
 gradleutils {
     setupSigning()
@@ -61,8 +60,12 @@ dependencies {
     runtimeImplementation gradleApi()
 
     baseImplementation gradleApi()
-    baseImplementation sourceSets.runtime.output
-    baseImplementation sourceSets.main.output
+    baseImplementation(project(":")) {
+        capabilities {
+            requireCapability("net.neoforged:groovydslimprover-runtime")
+        }
+    }
+    baseImplementation(project(":"))
 
     compileOnly 'org.jetbrains:annotations:24.0.0'
 
@@ -96,7 +99,6 @@ publishing {
     publications {
         register('mavenJava', MavenPublication) {
             from components.java
-            artifactId = 'groovydslimprover'
             gradleutils.sign(it)
 
             pom {
