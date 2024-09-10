@@ -120,3 +120,5 @@ publishing {
         maven gradleutils.publishingMaven
     }
 }
+
+tasks.assemble.dependsOn(tasks.withType(Jar))
