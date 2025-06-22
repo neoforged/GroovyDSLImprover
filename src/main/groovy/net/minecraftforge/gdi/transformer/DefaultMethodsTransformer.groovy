@@ -48,7 +48,7 @@ class DefaultMethodsTransformer extends AbstractASTTransformation implements Opc
                             Stream.of(it.parameters)
                                     .<Expression>map { GeneralUtils.varX(it) },
                     )
-                        .collect(Collectors.toList())
+                        .collect(Collectors.<Expression>toList())
             ))
 
             final mtd = clazz.addMethod(

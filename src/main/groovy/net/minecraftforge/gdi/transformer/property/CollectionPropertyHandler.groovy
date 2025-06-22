@@ -24,7 +24,11 @@ import java.util.stream.Stream
 class CollectionPropertyHandler implements PropertyHandler, Opcodes {
     private final Set<ClassNode> colTypes
     CollectionPropertyHandler(Class<? extends HasMultipleValues>... classes) {
-        this.colTypes = Stream.of(classes).map(ClassHelper.&make).collect(Collectors.toSet())
+        this.colTypes = new HashSet<>();
+
+        for (final def clz in classes) {
+            colTypes.add(ClassHelper.make(clz))
+        }
     }
 
     @Override
@@ -42,6 +46,7 @@ class CollectionPropertyHandler implements PropertyHandler, Opcodes {
     boolean handleInternal(MethodNode methodNode, AnnotationNode annotation, String propertyName, DSLPropertyTransformer.Utils utils) {
         final singularName = utils.getSingularPropertyName(propertyName, annotation)
         final type = methodNode.returnType.genericsTypes[0].type
+
         utils.visitPropertyType(type, annotation)
         final factoryMethod = utils.factory(type, annotation, singularName)
         final delegation = factoryMethod === null ? null : new DSLPropertyTransformer.OverloadDelegationStrategy(0, GeneralUtils.callThisX(factoryMethod.name))
@@ -95,9 +100,13 @@ class CollectionPropertyHandler implements PropertyHandler, Opcodes {
                 codeExpr: [GeneralUtils.callX(GeneralUtils.callThisX(methodNode.name), 'addAll', GeneralUtils.localVarX('values', arrayType))]
         )
 
-        final iterable = GenericsUtils.makeClassSafeWithGenerics(ClassHelper.make(Iterable), new GenericsType[]{new GenericsType(type, new ClassNode[] {type}, null).tap {
+        final upperBounds = new ClassNode[] {type}
+        final genericType = new GenericsType(GenericsUtils.newClass(type), upperBounds, null).tap {
             it.wildcard = true
-        }})
+        };
+        final genericTypes = new GenericsType[]{genericType}
+
+        final iterable = GenericsUtils.makeClassSafeWithGenerics(ClassHelper.make(Iterable), genericTypes)
         utils.createAndAddMethod(
                 methodName: propertyName,
                 modifiers: ACC_PUBLIC,

@@ -7,9 +7,11 @@ package net.minecraftforge.gdi.transformer.property
 
 import groovy.transform.CompileStatic
 import groovyjarjarasm.asm.Opcodes
-import net.minecraftforge.gdi.transformer.ClosureEquivalentTransformer
+import net.minecraftforge.gdi.runtime.ClosureToAction
+
 import net.minecraftforge.gdi.transformer.DSLPropertyTransformer
 import org.codehaus.groovy.ast.*
+import org.codehaus.groovy.ast.expr.Expression
 import org.codehaus.groovy.ast.tools.GeneralUtils
 import org.codehaus.groovy.ast.tools.GenericsUtils
 import org.gradle.api.Action
@@ -18,6 +20,7 @@ import org.gradle.api.NamedDomainObjectContainer
 @CompileStatic
 class NamedDomainObjectContainerHandler implements PropertyHandler, Opcodes {
     private static final ClassNode PROPERTY_TYPE = ClassHelper.make(NamedDomainObjectContainer)
+    private static final ClassNode CLOSURE_TO_ACTION = ClassHelper.make(ClosureToAction)
 
     @Override
     @SuppressWarnings('UnnecessaryQualifiedReference')
@@ -54,7 +57,7 @@ class NamedDomainObjectContainerHandler implements PropertyHandler, Opcodes {
                         'register',
                         GeneralUtils.args(
                                 GeneralUtils.localVarX('name', ClassHelper.STRING_TYPE),
-                                ClosureEquivalentTransformer.asAction(GeneralUtils.localVarX('closure', DSLPropertyTransformer.RAW_GENERIC_CLOSURE))
+                                asAction(GeneralUtils.localVarX('closure', DSLPropertyTransformer.RAW_GENERIC_CLOSURE))
                         )
                 )))
         )
@@ -70,5 +73,11 @@ class NamedDomainObjectContainerHandler implements PropertyHandler, Opcodes {
         )
 
         return true
+    }
+
+
+
+    static Expression asAction(Expression closure) {
+        GeneralUtils.callX(CLOSURE_TO_ACTION, 'delegateAndCall', closure)
     }
 }

@@ -10,6 +10,7 @@ import groovy.transform.*
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.FromString
 import groovy.transform.stc.SimpleType
+import groovyjarjarasm.asm.Opcodes
 import net.minecraftforge.gdi.transformer.property.*
 import net.minecraftforge.gdi.transformer.property.files.DirectoryPropertyHandler
 import net.minecraftforge.gdi.transformer.property.files.FileCollectionPropertyHandler
@@ -33,6 +34,8 @@ import org.gradle.util.Configurable
 import javax.annotation.Nullable
 import java.util.stream.Collectors
 import java.util.stream.Stream
+
+import static org.codehaus.groovy.ast.tools.GeneralUtils.*
 
 @CompileStatic
 @GroovyASTTransformation(phase = CompilePhase.SEMANTIC_ANALYSIS)
@@ -127,15 +130,15 @@ class DSLPropertyTransformer extends AbstractASTTransformation {
 
         @NamedVariant
         MethodNode createAndAddMethod(@NamedParam(required = true) final String methodName,
-                     @NamedParam final int modifiers = ACC_PUBLIC,
-                     @NamedParam final ClassNode returnType = ClassHelper.VOID_TYPE,
-                     @NamedParam final List<Parameter> parameters = new ArrayList<>(),
-                     @NamedParam final ClassNode[] exceptions = ClassNode.EMPTY_ARRAY,
-                     @NamedParam final List<AnnotationNode> annotations = [GENERATED_ANNOTATION],
-                     @NamedParam Statement code = new BlockStatement(),
-                     @NamedParam final List<? extends Expression> codeExpr = null,
-                     @NamedParam final Closure<List<OverloadDelegationStrategy>> delegationStrategies = { [] as List<OverloadDelegationStrategy> }) {
-            if (codeExpr !== null) code = GeneralUtils.block(new VariableScope(), codeExpr.stream().map { GeneralUtils.stmt(it) }.toArray { new Statement[it] })
+                                      @NamedParam final int modifiers = Opcodes.ACC_PUBLIC,
+                                      @NamedParam final ClassNode returnType = ClassHelper.VOID_TYPE,
+                                      @NamedParam final List<Parameter> parameters = new ArrayList<>(),
+                                      @NamedParam final ClassNode[] exceptions = ClassNode.EMPTY_ARRAY,
+                                      @NamedParam final List<AnnotationNode> annotations = [GENERATED_ANNOTATION],
+                                      @NamedParam Statement code = new BlockStatement(),
+                                      @NamedParam final List<? extends Expression> codeExpr = null,
+                                      @NamedParam final Closure<List<OverloadDelegationStrategy>> delegationStrategies = { [] as List<OverloadDelegationStrategy> }) {
+            if (codeExpr !== null) code = block(new VariableScope(), codeExpr.stream().map { stmt(it) }.toArray { new Statement[it] })
 
             final MethodNode method = new MethodNode(methodName, modifiers, returnType, parameters.stream().toArray { new Parameter[it] }, exceptions, code)
             method.addAnnotations(annotations)
@@ -149,12 +152,12 @@ class DSLPropertyTransformer extends AbstractASTTransformation {
                 this.createAndAddMethod(
                         methodName: method.name,
                         returnType: method.returnType,
-                        parameters: Stream.of(method.parameters).filter { it.name !== otherParamName }.collect(Collectors.toList()),
+                        parameters: Stream.of(method.parameters).filter { it.name !== otherParamName }.collect(Collectors.<Parameter>toList()),
                         code: GeneralUtils.stmt(GeneralUtils.callThisX(method.name, GeneralUtils.args(
                                 Stream.of(method.parameters).map {
                                     if (it.name == otherParamName) return strategy.overload
                                     return GeneralUtils.varX(it)
-                                }.collect(Collectors.toList())
+                                }.collect(Collectors.<Expression>toList())
                         )))
                 )
             }
@@ -166,7 +169,7 @@ class DSLPropertyTransformer extends AbstractASTTransformation {
             final fac = annotation.members.get('factory')
             if (fac !== null) return this.createAndAddMethod(
                     methodName: "_default${propertyName.capitalize()}",
-                    modifiers: ACC_PUBLIC,
+                    modifiers: Opcodes.ACC_PUBLIC,
                     code: GeneralUtils.returnS(GeneralUtils.callX(annotation.members.get('factory'), 'call')),
                     returnType: expectedType
             )
@@ -255,24 +258,24 @@ interface PropertyQuery {
     PropertyQuery PROPERTY = new PropertyQuery() {
         @Override
         Expression getter(MethodNode getterMethod) {
-            return GeneralUtils.callX(GeneralUtils.callThisX(getterMethod.name), 'getOrNull')
+            return callX(callThisX(getterMethod.name), 'getOrNull')
         }
 
         @Override
         Expression setter(MethodNode getterMethod, Expression args) {
-            return GeneralUtils.callX(GeneralUtils.callThisX(getterMethod.name), 'set', args)
+            return callX(callThisX(getterMethod.name), 'set', args)
         }
 
         @Override
         Expression getOrElse(MethodNode node, Expression orElse) {
-            return GeneralUtils.callX(GeneralUtils.callThisX(node.name), 'getOrElse', orElse)
+            return callX(callThisX(node.name), 'getOrElse', orElse)
         }
     }
 
     PropertyQuery GETTER = new PropertyQuery() {
         @Override
         Expression getter(MethodNode getterMethod) {
-            return GeneralUtils.callThisX(getterMethod.name)
+            return callThisX(getterMethod.name)
         }
 
         @Override
@@ -283,7 +286,7 @@ interface PropertyQuery {
         @Override
         Expression getOrElse(MethodNode node, Expression orElse) {
             final getter = getter(node)
-            return GeneralUtils.ternaryX(GeneralUtils.isNullX(getter), orElse, getter)
+            return ternaryX(isNullX(getter), orElse, getter)
         }
     }
 

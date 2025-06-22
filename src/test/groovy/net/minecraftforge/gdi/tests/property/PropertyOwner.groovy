@@ -6,6 +6,8 @@
 package net.minecraftforge.gdi.tests.property
 
 import groovy.transform.CompileStatic
+import groovy.transform.stc.ClosureParams
+import groovy.transform.stc.SimpleType
 import net.minecraftforge.gdi.annotations.DSLProperty
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.model.ObjectFactory

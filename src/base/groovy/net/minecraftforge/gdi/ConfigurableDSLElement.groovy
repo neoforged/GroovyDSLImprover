@@ -36,19 +36,6 @@ trait ConfigurableDSLElement<T extends ConfigurableDSLElement<T>> implements Con
     }
 
     /**
-     * Configures this object using the given closure.
-     * @param closure The closure used to configure the target.
-     * @return This object.
-     */
-    @NotNull
-    @Override
-    @SuppressWarnings("deprecation") //Use internal variant if ever removed.
-    @BouncerMethod(returnType = Object.class)
-    default T configure(Closure closure) {
-        return ConfigureUtils.configureSelf(closure, getThis());
-    }
-
-    /**
      * Configures this object using the given action.
      * @param consumer The action used to configure the target.
      * @return This object.
@@ -68,16 +55,5 @@ trait ConfigurableDSLElement<T extends ConfigurableDSLElement<T>> implements Con
     default T configure(final Action<T> consumer) {
         consumer.execute(getThis());
         return getThis();
-    }
-
-    /**
-     * Configures this object using the given properties map.
-     * @param source The source to configure the object from.
-     * @return This object.
-     */
-    @SuppressWarnings("deprecation") //Use internal variant if ever removed.
-    @NotNull
-    default T configure(final Map<String, Object> source) {
-        return ConfigureUtils.configureByMap(source, getThis());
     }
 }

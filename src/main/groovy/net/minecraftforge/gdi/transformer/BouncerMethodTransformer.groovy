@@ -44,7 +44,7 @@ class BouncerMethodTransformer extends AbstractASTTransformation implements Opco
             return
         }
 
-        final actualParams = Stream.of(method.parameters)
+        final List<Parameter> actualParams = Stream.of(method.parameters)
                 .filter { it.name != '$self' }
                 .collect(Collectors.toList())
 
@@ -53,8 +53,8 @@ class BouncerMethodTransformer extends AbstractASTTransformation implements Opco
                 actualParams.toArray() as Parameter[], method.exceptions,
                 GeneralUtils.returnS(GeneralUtils.bytecodeX {
                     it.visitIntInsn(ALOAD, 0) // Load self
-                    final params = actualParams.stream()
-                            .map { TransformerUtils.getType(it.type) }
+                    final List<Type> params = actualParams.stream()
+                            .map { Parameter parameter -> TransformerUtils.getType(parameter.type) }
                             .collect(Collectors.toList())
                     for (int i = 0; i < params.size(); i++) {
                         it.visitIntInsn(params[i].getOpcode(ILOAD), i + 1)
