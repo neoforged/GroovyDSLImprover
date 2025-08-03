@@ -56,4 +56,9 @@ trait ConfigurableDSLElement<T extends ConfigurableDSLElement<T>> implements Con
         consumer.execute(getThis());
         return getThis();
     }
+
+    @Override
+    T configure(Closure cl) {
+        cl.call(getThis())
+    }
 }

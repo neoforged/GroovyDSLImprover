@@ -21,6 +21,7 @@ public class MapUtils {
         put(keyType, valueType, map::put, values);
     }
 
+    @SuppressWarnings("unchecked")
     public static <K, V> void put(Class<K> keyType, Class<V> valueType, BiConsumer<K, V> putter, Object values) {
         if (!values.getClass().isArray()) {
             throw new IllegalArgumentException("Expecting array, but got: " + values.getClass());
