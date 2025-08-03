@@ -11,6 +11,7 @@ import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.FromString
 import groovy.transform.stc.SimpleType
 import groovyjarjarasm.asm.Opcodes
+import net.neoforged.gdi.markers.IsConfigurable
 import net.neoforged.gdi.transformer.property.*
 import net.neoforged.gdi.transformer.property.CollectionPropertyHandler
 import net.neoforged.gdi.transformer.property.DefaultPropertyHandler
@@ -48,6 +49,7 @@ class DSLPropertyTransformer extends AbstractASTTransformation {
     private static final ClassNode DELEGATES_TO_TYPE = ClassHelper.make(DelegatesTo)
     private static final ClassNode CLOSURE_PARAMS_TYPE = ClassHelper.make(ClosureParams)
     public static final ClassNode CONFIGURABLE_TYPE = ClassHelper.make(Configurable)
+    public static final ClassNode IS_CONFIGURABLE_TYPE = ClassHelper.make(IsConfigurable)
 
     public static final ClassNode RAW_GENERIC_CLOSURE = GenericsUtils.makeClassSafe(Closure)
 
@@ -226,7 +228,13 @@ class DSLPropertyTransformer extends AbstractASTTransformation {
 
         void visitPropertyType(ClassNode type, AnnotationNode annotation) {
             if (annotation.members.containsKey('isConfigurable')) return
-            if (type in NON_CONFIGURABLE_TYPES || !GeneralUtils.isOrImplements(type, CONFIGURABLE_TYPE)) {
+            if (
+                    type in NON_CONFIGURABLE_TYPES ||
+                            (
+                                    !GeneralUtils.isOrImplements(type, CONFIGURABLE_TYPE) &&
+                                            !GeneralUtils.isOrImplements(type, IS_CONFIGURABLE_TYPE)
+                            )
+            ) {
                 annotation.addMember('isConfigurable', GeneralUtils.constX(false, true))
             }
         }

@@ -8,6 +8,7 @@ package net.neoforged.gdi
 import groovy.transform.CompileStatic
 import net.neoforged.gdi.annotations.BouncerMethod
 import net.neoforged.gdi.annotations.DefaultMethods
+import net.neoforged.gdi.markers.IsConfigurable
 import net.neoforged.gdi.runtime.ClosureToAction
 import org.gradle.api.Action
 import org.gradle.api.plugins.ExtensionAware
@@ -23,7 +24,7 @@ import java.util.function.Consumer
  */
 @CompileStatic
 @DefaultMethods
-trait ConfigurableDSLElement<T extends ConfigurableDSLElement<T>> implements ExtensionAware {
+trait ConfigurableDSLElement<T extends ConfigurableDSLElement<T>> implements ExtensionAware, IsConfigurable {
 
     /**
      * Returns the current instance cast to the right target.
