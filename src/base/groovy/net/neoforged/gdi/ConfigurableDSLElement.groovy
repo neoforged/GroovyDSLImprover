@@ -60,5 +60,6 @@ trait ConfigurableDSLElement<T extends ConfigurableDSLElement<T>> implements Con
     @Override
     T configure(Closure cl) {
         cl.call(getThis())
+        return getThis();
     }
 }
