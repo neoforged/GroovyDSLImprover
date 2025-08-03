@@ -5,7 +5,7 @@ plugins {
     id 'groovy'
     id 'maven-publish'
     id 'net.neoforged.licenser' version '0.7.5'
-    id 'net.neoforged.gradleutils' version '5.0.1'
+    id 'net.neoforged.gradleutils' version '5.0.3'
 }
 
 group = 'net.neoforged'
