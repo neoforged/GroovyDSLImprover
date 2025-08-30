@@ -102,6 +102,8 @@ class DSLPropertyTransformer extends AbstractASTTransformation {
     private void visitMethod(MethodNode method, AnnotationNode annotation) {
         final propertyName = getPropertyName(method, annotation)
 
+        System.out.println("Processing: " + propertyName);
+
         final List<MethodNode> methods = []
         final Utils utils = new Utils() {
             @Override
