@@ -17,6 +17,7 @@ import org.codehaus.groovy.control.CompilePhase
 import org.codehaus.groovy.control.SourceUnit
 import org.codehaus.groovy.transform.AbstractASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
+import org.codehaus.groovy.transform.TransformWithPriority
 import org.codehaus.groovy.transform.sc.StaticCompileTransformation
 
 import java.util.stream.Collectors
@@ -24,7 +25,7 @@ import java.util.stream.Stream
 
 @CompileStatic
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
-class DefaultMethodsTransformer extends AbstractASTTransformation implements Opcodes {
+class DefaultMethodsTransformer extends AbstractASTTransformation implements Opcodes, TransformWithPriority {
     private static final ClassNode TRAIT = ClassHelper.make(Trait)
     private static final ClassNode CSTATIC = ClassHelper.make(CompileStatic)
     @Override
@@ -67,5 +68,10 @@ class DefaultMethodsTransformer extends AbstractASTTransformation implements Opc
         }
 
         clazz.annotations.removeIf { it.classNode == TRAIT }
+    }
+
+    @Override
+    int priority() {
+        return 0
     }
 }

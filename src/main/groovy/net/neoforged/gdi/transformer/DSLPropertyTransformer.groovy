@@ -11,8 +11,8 @@ import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.FromString
 import groovy.transform.stc.SimpleType
 import groovyjarjarasm.asm.Opcodes
+import net.neoforged.gdi.annotations.DSLProperty
 import net.neoforged.gdi.markers.IsConfigurable
-import net.neoforged.gdi.transformer.property.*
 import net.neoforged.gdi.transformer.property.CollectionPropertyHandler
 import net.neoforged.gdi.transformer.property.DefaultPropertyHandler
 import net.neoforged.gdi.transformer.property.MapPropertyHandler
@@ -33,6 +33,7 @@ import org.codehaus.groovy.control.CompilePhase
 import org.codehaus.groovy.control.SourceUnit
 import org.codehaus.groovy.transform.AbstractASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
+import org.codehaus.groovy.transform.TransformWithPriority
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.SetProperty
 import org.gradle.util.Configurable
@@ -45,7 +46,7 @@ import static org.codehaus.groovy.ast.tools.GeneralUtils.*
 
 @CompileStatic
 @GroovyASTTransformation(phase = CompilePhase.SEMANTIC_ANALYSIS)
-class DSLPropertyTransformer extends AbstractASTTransformation {
+class DSLPropertyTransformer extends AbstractASTTransformation implements TransformWithPriority {
     private static final ClassNode DELEGATES_TO_TYPE = ClassHelper.make(DelegatesTo)
     private static final ClassNode CLOSURE_PARAMS_TYPE = ClassHelper.make(ClosureParams)
     public static final ClassNode CONFIGURABLE_TYPE = ClassHelper.make(Configurable)
@@ -102,8 +103,6 @@ class DSLPropertyTransformer extends AbstractASTTransformation {
     private void visitMethod(MethodNode method, AnnotationNode annotation) {
         final propertyName = getPropertyName(method, annotation)
 
-        System.out.println("Processing: " + propertyName);
-
         final List<MethodNode> methods = []
         final Utils utils = new Utils() {
             @Override
@@ -132,6 +131,11 @@ class DSLPropertyTransformer extends AbstractASTTransformation {
     }
 
     static final AnnotationNode GENERATED_ANNOTATION = new AnnotationNode(ClassHelper.make(Generated))
+
+    @Override
+    int priority() {
+        return 1
+    }
 
     @CompileStatic
     abstract class Utils {
