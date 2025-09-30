@@ -33,7 +33,6 @@ import org.codehaus.groovy.control.CompilePhase
 import org.codehaus.groovy.control.SourceUnit
 import org.codehaus.groovy.transform.AbstractASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
-import org.codehaus.groovy.transform.TransformWithPriority
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.SetProperty
 import org.gradle.util.Configurable
@@ -46,7 +45,7 @@ import static org.codehaus.groovy.ast.tools.GeneralUtils.*
 
 @CompileStatic
 @GroovyASTTransformation(phase = CompilePhase.SEMANTIC_ANALYSIS)
-class DSLPropertyTransformer extends AbstractASTTransformation implements TransformWithPriority {
+class DSLPropertyTransformer extends AbstractASTTransformation {
     private static final ClassNode DELEGATES_TO_TYPE = ClassHelper.make(DelegatesTo)
     private static final ClassNode CLOSURE_PARAMS_TYPE = ClassHelper.make(ClosureParams)
     public static final ClassNode CONFIGURABLE_TYPE = ClassHelper.make(Configurable)
@@ -131,11 +130,6 @@ class DSLPropertyTransformer extends AbstractASTTransformation implements Transf
     }
 
     static final AnnotationNode GENERATED_ANNOTATION = new AnnotationNode(ClassHelper.make(Generated))
-
-    @Override
-    int priority() {
-        return 1
-    }
 
     @CompileStatic
     abstract class Utils {
