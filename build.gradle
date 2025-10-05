@@ -13,8 +13,7 @@ version = gradleutils.version
 
 gradleutils {
     setupSigning()
-    //TODO: Enable again once the nexus plugin is updated in GU
-    //setupCentralPublishing()
+    setupCentralPublishing()
 }
 
 sourceSets {
